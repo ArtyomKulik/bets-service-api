@@ -6,7 +6,7 @@ async function main() {
     username: `user${i + 1}`,
     user_balances: {
       create: {
-        balance: Math.floor(Math.random() * 10000)
+        balance: 0
       }
     }
   }));

@@ -13,8 +13,17 @@ model User {
   username      String         @unique
   created_at    DateTime       @default(now())
   updated_at    DateTime       @updatedAt
+  initialBalanceSet Boolean       @default(false)
   user_balances User_Balances?
+  bets             Bet[]
   @@map("users")
+}
+
+
+
+model External_Api_Account {
+       id            Int            @id @default(autoincrement())
+        
 }
 
 enum BetStatus {
@@ -24,20 +33,25 @@ enum BetStatus {
 
 model Bet {
   id         Int       @id @default(autoincrement())
+  user_id    Int 
   amount     Int
   status     BetStatus @default(pending)
+  win_amount Int
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
-  win_amount Int
+  completed_at DateTime?
+
+  user       User      @relation(fields: [user_id], references: [id])
+
 }
 
 model User_Balances {
   id               Int       @id @default(autoincrement())
+  user_id Int  @unique 
   balance          Decimal   @default(0)
   external_balance Decimal   @default(0)
   last_checked_at  DateTime?
   user    User @relation(fields: [user_id], references: [id])
-  user_id Int  @unique 
 
   @@map("user_balances")
 }

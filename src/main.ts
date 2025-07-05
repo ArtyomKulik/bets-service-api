@@ -2,18 +2,24 @@ import fastify, { FastifyReply, FastifyRequest } from 'fastify';
 import loadEnvConfig from './config/env.config';
 import authRouter from './routes/auth.router';
 import { utils } from './utils';
+import balanceRouter from './routes/balance.router';
+import betRouter from './routes/bet.router';
+import { IUser } from './schemas/Auth';
 
 loadEnvConfig();
 
 const startServer = async () => {
   const server = fastify();
 
+  server.decorateRequest('authUser', null);
+
   // Register middlewares
   // server.register(formbody);
   // server.register(cors);
   // server.register(helmet);
-
   server.register(authRouter, { prefix: '/auth' });
+  server.register(balanceRouter, { prefix: '/balance' });
+  server.register(betRouter, { prefix: '/bet' });
 
   // Health check route
   server.get('/health', async (_request, reply) => {
@@ -52,7 +58,6 @@ const startServer = async () => {
     server.log.error(err);
     process.exit(1);
   }
-
 };
 
 // Handle unhandled rejections

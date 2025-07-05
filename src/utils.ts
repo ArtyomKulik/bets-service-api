@@ -21,13 +21,36 @@ export const utils = {
     return hmac.digest('hex');
   },
 
-  verifySignature: (clientSignature: string, body: Record<string, any> | null, secret: string): boolean => {
+  verifySignature: (
+    clientSignature: string,
+    body: Record<string, any> | null,
+    secret: string,
+  ): boolean => {
     if (!clientSignature) {
       throw new Error('Missing user-id or signature header');
     }
     const serverSignature = utils.createHmacSignature(body, secret);
-    console.log(serverSignature, '<----- log server signature',clientSignature, clientSignature === serverSignature);
+    console.log(
+      serverSignature,
+      '<----- log server signature',
+      clientSignature,
+      clientSignature === serverSignature,
+    );
     return clientSignature === serverSignature;
+  },
+
+  getBearerTokenFromHeader: (authorizationHeader: string | undefined): string | null => {
+    if (!authorizationHeader) return null;
+    const token = authorizationHeader.replace('Bearer ', '');
+    return token || null;
+  },
+  verifyToken: (token: string): any => {
+    try {
+      return JWT.verify(token, process.env.APP_JWT_SECRET);
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
   },
 
   isJSON: (data: string) => {
@@ -69,20 +92,6 @@ export const utils = {
       await prisma.$queryRaw`SELECT 1`;
     } catch (e) {
       throw new Error(`Health check failed: ${e.message}`);
-    }
-  },
-
-  getTokenFromHeader: (authorizationHeader: string | undefined): string | null => {
-    if (!authorizationHeader) return null;
-    const token = authorizationHeader.replace('Bearer ', '');
-    return token || null;
-  },
-
-  verifyToken: (token: string): any => {
-    try {
-      return JWT.verify(token, process.env.APP_JWT_SECRET as string);
-    } catch (err) {
-      return null;
     }
   },
 

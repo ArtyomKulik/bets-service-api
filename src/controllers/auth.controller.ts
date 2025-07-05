@@ -5,7 +5,7 @@ import { utils } from '../utils';
 import { IAuthLoginDto } from '../schemas/Auth';
 import { error } from 'console';
 import { STANDARD } from '../constants';
-import { ERRORS, handleServerError } from '../helpers';
+import { ERRORS, handleServerError } from '../helpers/errors.helper';
 
 export const login = async (
   request: FastifyRequest<{
@@ -47,11 +47,12 @@ export const login = async (
         expiresIn: '1h',
       },
     );
-
+  
     return reply.code(STANDARD.OK.statusCode).send({
       token,
       expiresIn: process.env.ACCESS_TOKEN_TTL,
     });
+    
   } catch (err) {
     console.log(err);
     return handleServerError(reply, err);
