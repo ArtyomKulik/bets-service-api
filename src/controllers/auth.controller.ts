@@ -25,7 +25,8 @@ export const login = async (
     return reply.status(400).send({ error: 'Incorrect signature' });
   }
   try {
-    const { username } = request.body || {};
+    // получаем userId из body или header
+    const { username = userId } = request.body || {};
     if (!username) {
       throw new Error('Missing username in body');
     }
