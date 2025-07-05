@@ -1,0 +1,50 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl"]
+}
+
+model User {
+  id            Int            @id @default(autoincrement())
+  username      String         @unique
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @updatedAt
+  user_balances User_Balances?
+  @@map("users")
+}
+
+enum BetStatus {
+  pending
+  completed
+}
+
+model Bet {
+  id         Int       @id @default(autoincrement())
+  amount     Int
+  status     BetStatus @default(pending)
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  win_amount Int
+}
+
+model User_Balances {
+  id               Int       @id @default(autoincrement())
+  balance          Decimal   @default(0)
+  external_balance Decimal   @default(0)
+  last_checked_at  DateTime?
+  user    User @relation(fields: [user_id], references: [id])
+  user_id Int  @unique 
+
+  @@map("user_balances")
+}
+
+
+enum Role {
+  USER
+  ADMIN
+  DEV
+}
