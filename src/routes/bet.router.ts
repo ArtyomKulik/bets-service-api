@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { utils } from '../utils';
 import * as controllers from '../controllers';
 import { checkValidRequest, checkValidUser } from '../helpers/auth.helper';
-import { placeBetSchema } from '../schemas/Bet';
+import { betResultSchema, placeBetSchema } from '../schemas/Bet';
 
 async function betRouter(fastify: FastifyInstance) {
   fastify.post(
@@ -50,6 +50,19 @@ async function betRouter(fastify: FastifyInstance) {
       preHandler: [checkValidRequest, checkValidUser],
     },
     controllers.getRecommendedBet,
+  );
+
+  fastify.post(
+    '/win',
+    {
+      config: {
+        description:
+          'Обрабатывает результат ставки. Вероятность выигрыша 50%. При выигрыше сумма удваивается.',
+      },
+      preValidation: utils.preValidation(betResultSchema),
+      preHandler: [checkValidRequest, checkValidUser],
+    },
+    controllers.getBetResult,
   );
 }
 

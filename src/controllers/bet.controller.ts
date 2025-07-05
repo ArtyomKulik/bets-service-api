@@ -1,6 +1,7 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { IPlaceBetDto } from '../schemas/Bet';
+import { IBetResultDto, IPlaceBetDto } from '../schemas/Bet';
 import { prisma } from '../utils';
+import { error } from 'console';
 
 export const placeBet = async (
   request: FastifyRequest<{
@@ -10,7 +11,7 @@ export const placeBet = async (
 ) => {
   const { id } = request['authUser'];
   if (!id) {
-    throw new Error('Ошибка авторизации');
+    reply.status(401).send({ error: 'Ошибка авторизации' });
   }
   const { bet } = request.body || {};
   if (!bet) throw new Error('Неверная сумма ставки');
@@ -40,7 +41,7 @@ export const placeBet = async (
           user_id: id,
           amount: bet,
           status: 'pending',
-          win_amount: bet * 2,
+          win_amount: null,
         },
       });
 
@@ -131,5 +132,74 @@ export const getRecommendedBet = async (
     reply.send({ recommended_amount: randomNumber });
   } catch (error) {
     reply.send(400).send({ error: error.message });
+  }
+};
+
+// Ставка не найдена или уже обработана
+
+export const getBetResult = async (
+  request: FastifyRequest<{
+    Body: IBetResultDto;
+  }>,
+  reply: FastifyReply,
+) => {
+  const { id } = request['authUser'] || {};
+  if (!id) {
+    reply.status(401).send({ error: 'Пользователь не аутентифицирован' });
+  }
+  const { bet_id } = request.body;
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Получаем ставку с блокировкой
+      const bet = await tx.bet.findFirst({
+        where: { id: bet_id },
+        select: {
+          id: true,
+          amount: true,
+          status: true,
+          user_id: true,
+          win_amount: true,
+        },
+      });
+      await tx.$executeRaw`SELECT 1 FROM "Bet" WHERE id = ${bet_id} FOR UPDATE`;
+
+      // Проверки
+      if (!bet || bet.user_id !== id || bet.status !== 'pending') {
+        throw new Error('Ставка не найдена или уже обработана');
+      }
+
+      //  Генерируем результат (50% вероятность)
+      const isWin = Math.random() > 0.5;
+      const winAmount = isWin ? bet.amount * 2 : 0;
+
+      // Обновляем ставку
+      await tx.bet.update({
+        where: { id: bet_id },
+        data: {
+          status: 'completed',
+          win_amount: winAmount,
+          completed_at: new Date(),
+        },
+      });
+
+      // При выигрыше - начисляем средства
+      if (isWin) {
+        await tx.user_Balances.update({
+          where: { user_id: id },
+          data: { balance: { increment: winAmount } },
+        });
+      }
+
+      return {
+        result: isWin ? 'win' : 'lose',
+        win_amount: winAmount,
+      };
+    });
+
+    return reply.send(result);
+  } catch (error) {
+    console.error(error);
+    const message = error instanceof Error ? error.message : 'Ошибка сервера';
+    return reply.status(400).send({ error: message });
   }
 };
