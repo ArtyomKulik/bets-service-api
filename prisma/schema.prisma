@@ -16,6 +16,8 @@ model User {
   initialBalanceSet Boolean       @default(false)
   user_balances User_Balances?
   bets             Bet[]
+  api_account       External_Api_Account?
+
   @@map("users")
 }
 
@@ -23,7 +25,15 @@ model User {
 
 model External_Api_Account {
        id            Int            @id @default(autoincrement())
-        
+       external_secret_key  String
+       external_user_id  String @unique
+       created_at    DateTime       @default(now())
+       updated_at    DateTime       @updatedAt
+       user_id              Int?      @unique
+       user                 User?     @relation(fields: [user_id], references: [id])
+          @@map("external_api_accounts")
+
+
 }
 
 enum BetStatus {
@@ -40,9 +50,7 @@ model Bet {
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
   completed_at DateTime?
-
   user       User      @relation(fields: [user_id], references: [id])
-
 }
 
 model User_Balances {

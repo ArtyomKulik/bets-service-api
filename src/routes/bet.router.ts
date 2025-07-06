@@ -1,7 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { utils } from '../utils';
 import * as controllers from '../controllers';
-import { checkValidRequest, checkValidUser } from '../helpers/auth.helper';
 import { betResultSchema, placeBetSchema } from '../schemas/Bet';
 
 async function betRouter(fastify: FastifyInstance) {
@@ -13,7 +12,6 @@ async function betRouter(fastify: FastifyInstance) {
           'Размещает ставку для аутентифицированного пользователя. Проверяет достаточность баланса.',
       },
       preValidation: utils.preValidation(placeBetSchema),
-      preHandler: [checkValidRequest, checkValidUser],
     },
     controllers.placeBet,
   );
@@ -24,7 +22,6 @@ async function betRouter(fastify: FastifyInstance) {
       config: {
         description: 'Получение истории ставок пользователя',
       },
-      preHandler: [checkValidRequest, checkValidUser],
     },
 
     controllers.getBets,
@@ -36,7 +33,6 @@ async function betRouter(fastify: FastifyInstance) {
       config: {
         description: 'Получение одной ставки по id',
       },
-      preHandler: [checkValidRequest, checkValidUser],
     },
     controllers.getBetById,
   );
@@ -47,7 +43,6 @@ async function betRouter(fastify: FastifyInstance) {
       config: {
         description: 'Получение рекомендуемой ставки',
       },
-      preHandler: [checkValidRequest, checkValidUser],
     },
     controllers.getRecommendedBet,
   );
@@ -60,7 +55,6 @@ async function betRouter(fastify: FastifyInstance) {
           'Обрабатывает результат ставки. Вероятность выигрыша 50%. При выигрыше сумма удваивается.',
       },
       preValidation: utils.preValidation(betResultSchema),
-      preHandler: [checkValidRequest, checkValidUser],
     },
     controllers.getBetResult,
   );

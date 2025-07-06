@@ -1,10 +1,12 @@
-import fastify, { FastifyReply, FastifyRequest } from 'fastify';
+import fastify, { FastifyRequest } from 'fastify';
 import loadEnvConfig from './config/env.config';
 import authRouter from './routes/auth.router';
 import { utils } from './utils';
 import balanceRouter from './routes/balance.router';
 import betRouter from './routes/bet.router';
-import { IUser } from './schemas/Auth';
+import { checkValidHmacAndUserIdHeader, checkValidUser } from './helpers/headers.validation.helper';
+import { AuthHeaders } from './types/headers.types';
+import healthRouter from './routes/health.router';
 
 loadEnvConfig();
 
@@ -20,19 +22,20 @@ const startServer = async () => {
   server.register(authRouter, { prefix: '/auth' });
   server.register(balanceRouter, { prefix: '/balance' });
   server.register(betRouter, { prefix: '/bet' });
+  server.register(healthRouter, { prefix: '/health' });
 
-  // Health check route
-  server.get('/health', async (_request, reply) => {
-    try {
-      await utils.healthCheck();
-      reply.status(200).send({
-        message: 'Health check endpoint success.',
-      });
-    } catch (e) {
-      reply.status(500).send({
-        message: 'Health check endpoint failed.',
-      });
+  // Регистрируем хук для всех запросов
+  server.addHook('preHandler', async (request: FastifyRequest<{ Headers: AuthHeaders }>, reply) => {
+    // Пропускаем проверку для /health
+    if (request.url === '/health') {
+      return;
     }
+
+    if (request.url.includes('/auth')) {
+      return await checkValidHmacAndUserIdHeader(request, reply);
+    }
+    await checkValidHmacAndUserIdHeader(request, reply);
+    await checkValidUser(request, reply);
   });
 
   // Graceful shutdown

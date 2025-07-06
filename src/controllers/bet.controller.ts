@@ -38,10 +38,14 @@ export const placeBet = async (
 
       const newBet = await prisma.bet.create({
         data: {
-          user_id: id,
           amount: bet,
           status: 'pending',
-          win_amount: null,
+          win_amount: 0,
+          user: {
+            connect: {
+              id: id,
+            },
+          },
         },
       });
 
@@ -61,10 +65,6 @@ export const placeBet = async (
 };
 
 export const getBets = async (request, reply: FastifyReply) => {
-  const { id } = request['authUser'] || {};
-  if (!id) {
-    reply.status(401).send({ error: 'Пользователь не аутентифицирован' });
-  }
   try {
     const getBets = await prisma.bet.findMany();
     reply.send(getBets);
@@ -75,14 +75,10 @@ export const getBets = async (request, reply: FastifyReply) => {
 
 export const getBetById = async (
   request: FastifyRequest<{
-    Params: { id: string };
+    Params: { id?: string };
   }>,
   reply: FastifyReply,
 ) => {
-  const { id } = request['authUser'] || {};
-  if (!id) {
-    reply.status(401).send({ error: 'Пользователь не аутентифицирован' });
-  }
   const betId = parseInt(request.params.id, 10);
   // Проверка валидности betId
   if (isNaN(betId) || betId <= 0) {

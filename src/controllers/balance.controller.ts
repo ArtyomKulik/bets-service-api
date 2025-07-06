@@ -48,6 +48,7 @@ export const setInitialBalance = async (
         prisma.user.update({
           where: { id: user.id },
           data: { initialBalanceSet: true },
+          
         }),
       ]);
 

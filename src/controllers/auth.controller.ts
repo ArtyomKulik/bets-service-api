@@ -13,7 +13,7 @@ export const login = async (
   }>,
   reply: FastifyReply,
 ) => {
-  //  проверяем user-id и x-signature из headers и
+  //  проверяем user-id и x-signature из header
   const userId = request.headers['user-id'];
   const clientSignature = request.headers['x-signature'];
 

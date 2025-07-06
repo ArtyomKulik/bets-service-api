@@ -20,6 +20,13 @@ export const utils = {
     // Возвращаем подпись в шестнадцатеричном формате
     return hmac.digest('hex');
   },
+  safeCompare(a: string, b: string): boolean {
+    try {
+      return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+    } catch {
+      return false;
+    }
+  },
 
   verifySignature: (
     clientSignature: string,
