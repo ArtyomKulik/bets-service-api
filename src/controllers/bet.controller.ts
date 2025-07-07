@@ -18,21 +18,20 @@ export const placeBet = async (
 
   try {
     const placeBetResult = await prisma.$transaction(async (prisma) => {
+      //  Блокируем запись через специальный метод Prisma
+      await prisma.$executeRaw`SELECT 1 FROM user_balances WHERE user_id = ${id} FOR UPDATE`;
       //  Используем findFirst с FOR UPDATE для блокировки
       const userBalance = await prisma.user_Balances.findFirst({
         where: { user_id: id },
         select: { balance: true },
       });
 
-      //  Блокируем запись через специальный метод Prisma
-      await prisma.$executeRaw`SELECT 1 FROM user_balances WHERE user_id = ${id} FOR UPDATE`;
-
       if (!userBalance) {
         throw new Error('Баланс пользователя не найден');
       }
 
       // Проверяем достаточность средств
-      if (userBalance.balance.lessThan(bet)) {
+      if (userBalance.balance < bet) {
         throw new Error('Недостаточно средств на балансе');
       }
 
@@ -46,6 +45,19 @@ export const placeBet = async (
               id: id,
             },
           },
+        },
+      });
+
+      // добавление транзакции
+      await prisma.transaction.create({
+        data: {
+          user_id: id,
+          bet_id: newBet.id,
+          type: 'bet_place',
+          amount: -bet,
+          balance_before: userBalance.balance,
+          balance_after: userBalance.balance - bet,
+          description: `Bet placement #${newBet.id}`,
         },
       });
 
@@ -113,7 +125,7 @@ export const getRecommendedBet = async (
     });
 
     // Преобразуем Decimal баланса в число
-    const userBalanceValue = userBalance.balance.toNumber();
+    const userBalanceValue = userBalance.balance;
 
     // Проверяем, что баланс позволяет сгенерировать число (минимум 1)
     if (userBalanceValue < 1) {
@@ -130,9 +142,6 @@ export const getRecommendedBet = async (
     reply.send(400).send({ error: error.message });
   }
 };
-
-// Ставка не найдена или уже обработана
-
 export const getBetResult = async (
   request: FastifyRequest<{
     Body: IBetResultDto;
@@ -163,7 +172,7 @@ export const getBetResult = async (
       if (!bet || bet.user_id !== id || bet.status !== 'pending') {
         throw new Error('Ставка не найдена или уже обработана');
       }
-
+      const userBalance = await tx.user_Balances.findUnique({ where: { user_id: id } });
       //  Генерируем результат (50% вероятность)
       const isWin = Math.random() > 0.5;
       const winAmount = isWin ? bet.amount * 2 : 0;
@@ -184,15 +193,26 @@ export const getBetResult = async (
           where: { user_id: id },
           data: { balance: { increment: winAmount } },
         });
+
+        // добавление транзакции
+        await tx.transaction.create({
+          data: {
+            user_id: id,
+            bet_id: bet_id,
+            type: 'bet_win',
+            amount: winAmount,
+            balance_before: userBalance.balance,
+            balance_after: userBalance.balance + winAmount,
+            description: `Win amount for bet #${bet.id}`,
+          },
+        });
       }
 
-      return {
+      return reply.send({
         result: isWin ? 'win' : 'lose',
         win_amount: winAmount,
-      };
+      });
     });
-
-    return reply.send(result);
   } catch (error) {
     console.error(error);
     const message = error instanceof Error ? error.message : 'Ошибка сервера';

@@ -61,8 +61,7 @@ export const checkValidHmacAndUserIdHeader = async (
       request.body,
       apiAccount.external_secret_key,
     );
-    console.log(generatedSignature, '<-----generatedSignature');
-    console.log(utils.safeCompare(generatedSignature, xSignature), '<---- utils safe compare');
+    console.log(generatedSignature, '<-----generated x signature ');
     // Безопасное сравнение подписей
     if (!utils.safeCompare(generatedSignature, xSignature)) {
       return reply.status(403).send({ error: 'Неверная подпись' });

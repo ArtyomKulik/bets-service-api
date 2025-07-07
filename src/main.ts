@@ -1,13 +1,11 @@
 import fastify, { FastifyRequest } from 'fastify';
 import loadEnvConfig from './config/env.config';
-import authRouter from './routes/auth.router';
-import { utils } from './utils';
-import balanceRouter from './routes/balance.router';
-import betRouter from './routes/bet.router';
 import { checkValidHmacAndUserIdHeader, checkValidUser } from './helpers/headers.validation.helper';
 import { AuthHeaders } from './types/headers.types';
+import authRouter from './routes/auth.router';
+import balanceRouter from './routes/balance.router';
+import betRouter from './routes/bet.router';
 import healthRouter from './routes/health.router';
-
 loadEnvConfig();
 
 const startServer = async () => {

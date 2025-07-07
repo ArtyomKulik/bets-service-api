@@ -12,8 +12,6 @@ export default function loadEnvConfig(): void {
   }
 
   const schema = Joi.object({
-    USER_ID: Joi.string().required(),
-    HMAC_SECRET_KEY: Joi.string().required(),
     API_BASE_URL: Joi.string().uri({ scheme: 'https' }).required(),
     APP_JWT_SECRET: Joi.string().required(),
     DATABASE_URL: Joi.string().required(),

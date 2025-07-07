@@ -9,31 +9,29 @@ generator client {
 }
 
 model User {
-  id            Int            @id @default(autoincrement())
-  username      String         @unique
-  created_at    DateTime       @default(now())
-  updated_at    DateTime       @updatedAt
-  initialBalanceSet Boolean       @default(false)
-  user_balances User_Balances?
-  bets             Bet[]
+  id                Int                   @id @default(autoincrement())
+  username          String                @unique
+  created_at        DateTime              @default(now())
+  updated_at        DateTime              @updatedAt
+  initialBalanceSet Boolean               @default(false)
+  user_balances     User_Balances?
+  bets              Bet[]
   api_account       External_Api_Account?
+  transaction       Transaction[]
 
   @@map("users")
 }
 
-
-
 model External_Api_Account {
-       id            Int            @id @default(autoincrement())
-       external_secret_key  String
-       external_user_id  String @unique
-       created_at    DateTime       @default(now())
-       updated_at    DateTime       @updatedAt
-       user_id              Int?      @unique
-       user                 User?     @relation(fields: [user_id], references: [id])
-          @@map("external_api_accounts")
+  id                  Int      @id @default(autoincrement())
+  external_secret_key String
+  external_user_id    String   @unique
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+  user_id             Int?     @unique
+  user                User?    @relation(fields: [user_id], references: [id])
 
-
+  @@map("external_api_accounts")
 }
 
 enum BetStatus {
@@ -42,31 +40,42 @@ enum BetStatus {
 }
 
 model Bet {
-  id         Int       @id @default(autoincrement())
-  user_id    Int 
-  amount     Int
-  status     BetStatus @default(pending)
-  win_amount Int?
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
+  id           Int           @id @default(autoincrement())
+  user_id      Int
+  amount       Int
+  status       BetStatus     @default(pending)
+  win_amount   Int?
+  created_at   DateTime      @default(now())
+  updated_at   DateTime      @updatedAt
   completed_at DateTime?
-  user       User      @relation(fields: [user_id], references: [id])
+  user         User          @relation(fields: [user_id], references: [id])
+  Transaction  Transaction[]
 }
 
 model User_Balances {
   id               Int       @id @default(autoincrement())
-  user_id Int  @unique 
-  balance          Decimal   @default(0)
-  external_balance Decimal   @default(0)
-  last_checked_at  DateTime?
-  user    User @relation(fields: [user_id], references: [id])
+  user_id          Int       @unique
+  balance          Int   @default(0)
+  external_balance Int   @default(0)
+  user             User      @relation(fields: [user_id], references: [id])
 
   @@map("user_balances")
 }
 
+model Transaction {
+  id             Int      @id @default(autoincrement())
+  user_id        Int
+  bet_id         Int
+  type           String
+  amount         Int
+  balance_before Int
+  balance_after  Int
+  description    String
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
 
-enum Role {
-  USER
-  ADMIN
-  DEV
+  bet  Bet  @relation(fields: [bet_id], references: [id])
+  user User @relation(fields: [user_id], references: [id])
+
+  @@map("transaction")
 }

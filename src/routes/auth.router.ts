@@ -3,7 +3,7 @@ import { utils } from '../utils';
 import { loginSchema } from '../schemas/Auth';
 import * as controllers from '../controllers';
 
-async function userRouter(fastify: FastifyInstance) {
+async function authRouter(fastify: FastifyInstance) {
   fastify.post(
     '/login',
     {
@@ -50,4 +50,4 @@ async function userRouter(fastify: FastifyInstance) {
   );
 }
 
-export default userRouter;
+export default authRouter;
