@@ -5,10 +5,8 @@ async function transactionRouter(fastify: FastifyInstance) {
   fastify.get(
     '/',
     {
-      config: {
-        description: 'Получение истории транзакций',
-      },
       schema: {
+        description: 'Получение истории транзакций',
         querystring: {
           type: 'object',
           properties: {

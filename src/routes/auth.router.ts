@@ -8,6 +8,8 @@ async function authRouter(fastify: FastifyInstance) {
     '/login',
     {
       schema: {
+        description:
+          'Логин',
         body: {
           type: 'object',
           properties: {
@@ -23,10 +25,7 @@ async function authRouter(fastify: FastifyInstance) {
           },
         },
       },
-      config: {
-        description:
-          'User login endpoint with JWT token response with required x-signature and user-id headers',
-      },
+
       preValidation: [
         (request, reply, done) => {
           const { headers } = request;

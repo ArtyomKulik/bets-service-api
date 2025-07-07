@@ -7,7 +7,7 @@ async function betRouter(fastify: FastifyInstance) {
   fastify.post(
     '/',
     {
-      config: {
+      schema: {
         description:
           'Размещает ставку для аутентифицированного пользователя. Проверяет достаточность баланса.',
       },
@@ -19,7 +19,7 @@ async function betRouter(fastify: FastifyInstance) {
   fastify.get(
     '/',
     {
-      config: {
+      schema: {
         description: 'Получение истории ставок пользователя',
       },
     },
@@ -30,7 +30,7 @@ async function betRouter(fastify: FastifyInstance) {
   fastify.get(
     '/:id',
     {
-      config: {
+      schema: {
         description: 'Получение одной ставки по id',
       },
     },
@@ -40,7 +40,7 @@ async function betRouter(fastify: FastifyInstance) {
   fastify.get(
     '/recommended',
     {
-      config: {
+      schema: {
         description: 'Получение рекомендуемой ставки',
       },
     },
@@ -50,7 +50,7 @@ async function betRouter(fastify: FastifyInstance) {
   fastify.post(
     '/win',
     {
-      config: {
+      schema: {
         description:
           'Обрабатывает результат ставки. Вероятность выигрыша 50%. При выигрыше сумма удваивается.',
       },

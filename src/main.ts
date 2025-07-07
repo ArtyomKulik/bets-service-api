@@ -11,6 +11,39 @@ loadEnvConfig();
 const startServer = async () => {
   const server = fastify();
 
+  // Конфигурация Swagger
+  await server.register(import('@fastify/swagger'), {
+    swagger: {
+      info: {
+        title: 'Bets API',
+        description: 'API documentation for Bets service',
+        version: '1.0.0',
+      },
+      host: 'localhost:8080',
+      schemes: ['http'],
+      consumes: ['application/json'],
+      produces: ['application/json'],
+      securityDefinitions: {
+        apiKey: {
+          type: 'apiKey',
+          name: 'Authorization',
+          in: 'header',
+        },
+      },
+    },
+  });
+
+  // Конфигурация Swagger UI
+  await server.register(import('@fastify/swagger-ui'), {
+    routePrefix: '/docs',
+    uiConfig: {
+      docExpansion: 'full',
+      deepLinking: true,
+    },
+    staticCSP: true,
+    transformStaticCSP: (header) => header,
+  });
+
   server.decorateRequest('authUser', null);
 
   // Register middlewares
@@ -25,7 +58,7 @@ const startServer = async () => {
   // Регистрируем хук для всех запросов
   server.addHook('preHandler', async (request: FastifyRequest<{ Headers: AuthHeaders }>, reply) => {
     // Пропускаем проверку для /health
-    if (request.url === '/health') {
+    if (request.url === '/health' || request.url.startsWith('/docs')) {
       return;
     }
 

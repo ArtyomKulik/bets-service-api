@@ -7,9 +7,9 @@ async function balanceRouter(fastify: FastifyInstance) {
   fastify.post(
     '/',
     {
-      config: {
+      schema: {
         description: 'Установка баланса пользователя',
-      },
+      }, 
       preValidation: utils.preValidation(balanceSchema),
     },
     controllers.setInitialBalance,

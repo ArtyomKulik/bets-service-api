@@ -5,7 +5,7 @@ async function healthRouter(fastify: FastifyInstance) {
   fastify.get(
     '/',
     {
-      config: {
+      schema: {
         description: 'Проверка статуса API',
       },
     },
