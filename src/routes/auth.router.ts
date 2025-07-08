@@ -8,14 +8,7 @@ async function authRouter(fastify: FastifyInstance) {
     '/login',
     {
       schema: {
-        description:
-          'Логин',
-        body: {
-          type: 'object',
-          properties: {
-            username: { type: 'string' },
-          },
-        },
+        description: 'Логин',
         headers: {
           type: 'object',
           required: ['x-signature', 'user-id'],

@@ -1,4 +1,3 @@
-// seed.ts
 import { External_Api_Account, PrismaClient, User } from '@prisma/client';
 
 const prisma = new PrismaClient();

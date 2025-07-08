@@ -91,13 +91,18 @@ export const getBetById = async (
   }>,
   reply: FastifyReply,
 ) => {
+  const { id } = request['authUser'];
+  if (!id) {
+    reply.status(401).send({ error: 'Ошибка авторизации' });
+  }
   const betId = parseInt(request.params.id, 10);
+
   // Проверка валидности betId
-  if (isNaN(betId) || betId <= 0) {
+  if (isNaN(betId) || betId <= 0 || isNaN(Number(id)) || id <= 0) {
     return reply.status(404).send({ error: 'Ставка не найдена' });
   }
   try {
-    const getBet = await prisma.bet.findUnique({ where: { id: betId } });
+    const getBet = await prisma.bet.findUnique({ where: { id: betId, user_id: id } });
     if (!getBet) {
       return reply.status(404).send({ error: 'Ставка не найдена' });
     }

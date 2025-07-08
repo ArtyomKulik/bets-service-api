@@ -14,26 +14,36 @@ export const login = async (
   reply: FastifyReply,
 ) => {
   //  проверяем user-id и x-signature из header
-  const userId = request.headers['user-id'];
+  const userId = Number(request.headers['user-id']);
   const clientSignature = request.headers['x-signature'];
 
   //валидировали в schema, но на всякий случай еще проверим
-  if (Array.isArray(userId) || Array.isArray(clientSignature) || !userId || !clientSignature) {
+  if (
+    Array.isArray(userId) ||
+    Array.isArray(clientSignature) ||
+    !userId ||
+    isNaN(userId) ||
+    !clientSignature
+  ) {
     return reply.status(401).send({ error: 'Missing user-id or signature header' });
   }
   if (!utils.verifySignature(clientSignature, request.body, process.env.HMAC_SECRET_KEY)) {
     return reply.status(400).send({ error: 'Incorrect signature' });
   }
   try {
-    // получаем userId из body или header
-    const { username = userId } = request.body || {};
-    if (!username) {
-      throw new Error('Missing username in body');
-    }
-    const user = await prisma.user.findUnique({ where: { username } });
+    const { username } = request.body || {};
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       return reply.code(ERRORS.userNotExists.statusCode).send(ERRORS.userNotExists.message);
     }
+
+    // await prisma.user.update({
+    //   where: { id: userId },
+    //   data: {
+    //     username: username,
+    //   },
+    // });
 
     const token = JWT.sign(
       {
@@ -47,12 +57,11 @@ export const login = async (
         expiresIn: '1h',
       },
     );
-  
+
     return reply.code(STANDARD.OK.statusCode).send({
       token,
       expiresIn: process.env.ACCESS_TOKEN_TTL,
     });
-    
   } catch (err) {
     console.log(err);
     return handleServerError(reply, err);

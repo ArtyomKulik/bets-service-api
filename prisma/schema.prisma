@@ -41,7 +41,7 @@ enum BetStatus {
 
 model Bet {
   id           Int           @id @default(autoincrement())
-  user_id      Int
+  user_id      Int          
   amount       Int
   status       BetStatus     @default(pending)
   win_amount   Int?
@@ -50,6 +50,9 @@ model Bet {
   completed_at DateTime?
   user         User          @relation(fields: [user_id], references: [id])
   Transaction  Transaction[]
+
+   @@index([user_id])
+
 }
 
 model User_Balances {
@@ -58,7 +61,7 @@ model User_Balances {
   balance          Int   @default(0)
   external_balance Int   @default(0)
   user             User      @relation(fields: [user_id], references: [id])
-
+  
   @@map("user_balances")
 }
 
@@ -77,5 +80,9 @@ model Transaction {
   bet  Bet  @relation(fields: [bet_id], references: [id])
   user User @relation(fields: [user_id], references: [id])
 
+    @@index([user_id])        
+  @@index([bet_id])     
+
   @@map("transaction")
+  
 }

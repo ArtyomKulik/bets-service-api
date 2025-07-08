@@ -5,6 +5,10 @@ export const getTransactions = async (
   request: FastifyRequest<{ Querystring: { page?: string; limit?: string } }>,
   reply: FastifyReply,
 ) => {
+  const { id } = request['authUser'];
+  if (!id) {
+    reply.status(401).send({ error: 'Ошибка авторизации' });
+  }
   try {
     const query = request.query;
 
@@ -24,6 +28,7 @@ export const getTransactions = async (
     const skip = (page - 1) * limit;
     // Получаем транзакции с пагинацией
     const transactions = await prisma.transaction.findMany({
+      where: { user_id: id },
       skip,
       take: limit,
       orderBy: { created_at: 'desc' },
