@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
-import { utils } from '../utils';
 import { balanceSchema } from '../schemas/Balance';
 import * as controllers from '../controllers';
+import { validationUtils } from '../utils/validation.utils';
 
 async function balanceRouter(fastify: FastifyInstance) {
   fastify.post(
@@ -10,7 +10,7 @@ async function balanceRouter(fastify: FastifyInstance) {
       schema: {
         description: 'Установка баланса пользователя',
       }, 
-      preValidation: utils.preValidation(balanceSchema),
+      preValidation: validationUtils.preValidation(balanceSchema),
     },
     controllers.setInitialBalance,
   );

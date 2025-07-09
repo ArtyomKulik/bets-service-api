@@ -1,10 +1,10 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { prisma } from '../utils';
 import * as JWT from 'jsonwebtoken';
-import { utils } from '../utils';
 import { IAuthLoginDto } from '../schemas/Auth';
 import { STANDARD } from '../constants';
 import { ERRORS, handleServerError } from '../helpers/errors.helper';
+import { hmacUtils } from '../utils/hmac.utils';
+import prisma from '../config/prisma.config';
 
 export const login = async (
   request: FastifyRequest<{
@@ -26,7 +26,7 @@ export const login = async (
   ) {
     return reply.status(401).send({ error: 'Missing user-id or signature header' });
   }
-  if (!utils.verifySignature(clientSignature, request.body, process.env.HMAC_SECRET_KEY)) {
+  if (!hmacUtils.verifySignature(clientSignature, request.body, process.env.HMAC_SECRET_KEY)) {
     return reply.status(400).send({ error: 'Incorrect signature' });
   }
   try {

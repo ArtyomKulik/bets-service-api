@@ -1,16 +1,18 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { prisma, utils } from '../utils';
 import { ERRORS } from './errors.helper';
 import { AuthHeaders } from '../types/headers.types';
+import { authUtils } from '../utils/auth.utils';
+import prisma from '../config/prisma.config';
+import { hmacUtils } from '../utils/hmac.utils';
 
 export const checkValidUser = async (request: FastifyRequest, reply: FastifyReply) => {
-  const token = utils.getBearerTokenFromHeader(request.headers.authorization);
+  const token = authUtils.getBearerTokenFromHeader(request.headers.authorization);
   console.log(token, '<---token checkValidUser');
   if (!token) {
     return reply.code(ERRORS.unauthorizedAccess.statusCode).send(ERRORS.unauthorizedAccess.message);
   }
 
-  const decoded = utils.verifyToken(token);
+  const decoded = authUtils.verifyToken(token);
   console.log(decoded, '<--- decoded checkValidUser');
 
   if (!decoded || !decoded.sub) {
@@ -57,13 +59,13 @@ export const checkValidHmacAndUserIdHeader = async (
       reply.status(404).send({ error: 'Пользователь не найден' });
     }
     //создание hmac подписи
-    const generatedSignature = utils.createHmacSignature(
+    const generatedSignature = hmacUtils.createHmacSignature(
       request.body,
       apiAccount.external_secret_key,
     );
     console.log(generatedSignature, '<-----generated x signature ');
     // Безопасное сравнение подписей
-    if (!utils.safeCompare(generatedSignature, xSignature)) {
+    if (!hmacUtils.safeCompare(generatedSignature, xSignature)) {
       return reply.status(403).send({ error: 'Неверная подпись' });
     }
   } catch (error) {

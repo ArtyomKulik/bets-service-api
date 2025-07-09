@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
-import { utils } from '../utils';
 import * as controllers from '../controllers';
 import { betResultSchema, placeBetSchema } from '../schemas/Bet';
+import { validationUtils } from '../utils/validation.utils';
 
 async function betRouter(fastify: FastifyInstance) {
   fastify.post(
@@ -11,7 +11,7 @@ async function betRouter(fastify: FastifyInstance) {
         description:
           'Размещает ставку для аутентифицированного пользователя. Проверяет достаточность баланса.',
       },
-      preValidation: utils.preValidation(placeBetSchema),
+      preValidation: validationUtils.preValidation(placeBetSchema),
     },
     controllers.placeBet,
   );
@@ -54,7 +54,7 @@ async function betRouter(fastify: FastifyInstance) {
         description:
           'Обрабатывает результат ставки. Вероятность выигрыша 50%. При выигрыше сумма удваивается.',
       },
-      preValidation: utils.preValidation(betResultSchema),
+      preValidation: validationUtils.preValidation(betResultSchema),
     },
     controllers.getBetResult,
   );

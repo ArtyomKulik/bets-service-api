@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
-import { utils } from '../utils';
 import { loginSchema } from '../schemas/Auth';
 import * as controllers from '../controllers';
+import { validationUtils } from '../utils/validation.utils';
 
 async function authRouter(fastify: FastifyInstance) {
   fastify.post(
@@ -35,7 +35,7 @@ async function authRouter(fastify: FastifyInstance) {
 
           done();
         },
-        utils.preValidation(loginSchema),
+        validationUtils.preValidation(loginSchema),
       ],
     },
     controllers.login,

@@ -1,7 +1,7 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { IBetResultDto, IPlaceBetDto } from '../schemas/Bet';
-import { prisma } from '../utils';
 import { error } from 'console';
+import prisma from '../config/prisma.config';
 
 export const placeBet = async (
   request: FastifyRequest<{

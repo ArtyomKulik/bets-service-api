@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { prisma } from '../utils';
+import prisma from '../config/prisma.config';
 
 export const getTransactions = async (
   request: FastifyRequest<{ Querystring: { page?: string; limit?: string } }>,

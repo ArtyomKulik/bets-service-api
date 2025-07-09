@@ -1,8 +1,8 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { IBalanceDto } from '../schemas/Balance';
-import { prisma, utils } from '../utils';
 import { handleServerError } from '../helpers/errors.helper';
 import { Prisma } from '@prisma/client';
+import prisma from '../config/prisma.config';
 
 export const setInitialBalance = async (
   request: FastifyRequest<{
