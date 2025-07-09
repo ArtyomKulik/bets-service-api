@@ -6,9 +6,10 @@ import authRouter from './routes/auth.router';
 import balanceRouter from './routes/balance.router';
 import betRouter from './routes/bet.router';
 import healthRouter from './routes/health.router';
+import { start } from 'repl';
 loadEnvConfig();
 
-const startServer = async () => {
+const buildServer = async () => {
   const server = fastify();
 
   // Конфигурация Swagger
@@ -84,14 +85,7 @@ const startServer = async () => {
     });
   });
 
-  try {
-    await server.listen({
-      port: 8080,
-    });
-  } catch (err) {
-    server.log.error(err);
-    process.exit(1);
-  }
+  return server;
 };
 
 // Handle unhandled rejections
@@ -100,4 +94,10 @@ process.on('unhandledRejection', (err) => {
   process.exit(1);
 });
 
-startServer();
+if (require.main === module) {
+  buildServer().then((server) => {
+    server.listen({ port: 8080 });
+  });
+}
+
+export default buildServer;

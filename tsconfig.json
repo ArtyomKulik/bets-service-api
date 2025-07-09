@@ -5,7 +5,7 @@
     "target": "es2020",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "incremental": true,  
+    "incremental": true,
     "noImplicitAny": false,
     "moduleResolution": "node",
     "sourceMap": true,
@@ -14,7 +14,7 @@
     "paths": {
       "config/*": ["config/*"]
     },
-    "types": ["node", "jest"]
+    "types": ["node"]
   },
   "include": ["src", "test"],
   "exclude": ["node_modules", "dist", "coverage"]
