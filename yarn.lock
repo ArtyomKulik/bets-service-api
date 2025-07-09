@@ -202,6 +202,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fastify/rate-limit@npm:^10.3.0":
+  version: 10.3.0
+  resolution: "@fastify/rate-limit@npm:10.3.0"
+  dependencies:
+    "@lukeed/ms": "npm:^2.0.2"
+    fastify-plugin: "npm:^5.0.0"
+    toad-cache: "npm:^3.7.0"
+  checksum: 10c0/dc29c4e088362cc144a9782d86d50bc8bbd440d10017c394660ff26bd7468feb90ba412e101b3e312bfdbb7a515798ffd73801ff32a36d0fedf40032ff081dcb
+  languageName: node
+  linkType: hard
+
 "@fastify/send@npm:^4.0.0":
   version: 4.1.0
   resolution: "@fastify/send@npm:4.1.0"
@@ -1864,6 +1875,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "bets-fastify-api@workspace:."
   dependencies:
+    "@fastify/rate-limit": "npm:^10.3.0"
     "@fastify/swagger": "npm:^9.5.1"
     "@fastify/swagger-ui": "npm:^5.2.3"
     "@prisma/client": "npm:^6.11.1"

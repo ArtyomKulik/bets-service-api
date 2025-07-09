@@ -4,6 +4,7 @@ import * as controllers from '../controllers';
 async function healthRouter(fastify: FastifyInstance) {
   fastify.get(
     '/',
+
     {
       schema: {
         description: 'Проверка статуса API',

@@ -10,8 +10,8 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/main.js",
-    "dev": "tsc -p tsconfig.json && node dist/main.js",
+    "start": "node dist/src/main.js",
+    "dev": "tsc -p tsconfig.json && node dist/src/main.js",
     "seed": "ts-node  ./prisma/seed.prisma.ts",
     "dbr": "npx prisma db push --force-reset && npx prisma db seed",
     "test": "tap 'test/**/*test*.{ts, js}'"

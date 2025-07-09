@@ -3,7 +3,6 @@ import { prisma } from '../utils';
 import * as JWT from 'jsonwebtoken';
 import { utils } from '../utils';
 import { IAuthLoginDto } from '../schemas/Auth';
-import { error } from 'console';
 import { STANDARD } from '../constants';
 import { ERRORS, handleServerError } from '../helpers/errors.helper';
 
@@ -37,13 +36,6 @@ export const login = async (
     if (!user) {
       return reply.code(ERRORS.userNotExists.statusCode).send(ERRORS.userNotExists.message);
     }
-
-    // await prisma.user.update({
-    //   where: { id: userId },
-    //   data: {
-    //     username: username,
-    //   },
-    // });
 
     const token = JWT.sign(
       {

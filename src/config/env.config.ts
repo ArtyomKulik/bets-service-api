@@ -3,7 +3,7 @@ import Joi from 'joi';
 import dotenv from 'dotenv';
 
 export default function loadEnvConfig(): void {
-  const envPath = path.join(__dirname, '..', '..', '.env');
+  const envPath = path.join(__dirname, '..', '..', '..', '.env');
 
   const result = dotenv.config({ path: envPath });
 
@@ -20,6 +20,7 @@ export default function loadEnvConfig(): void {
   const { error } = schema.validate(process.env, { abortEarly: false });
 
   if (error) {
+    console.error(error);
     throw new Error(`Config validation error: ${error.message}`);
   }
 }
