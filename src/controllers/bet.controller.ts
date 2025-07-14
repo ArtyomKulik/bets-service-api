@@ -3,6 +3,8 @@ import { IBetResultDto, IPlaceBetDto } from '../schemas/Bet';
 import { error } from 'console';
 import prisma from '../config/prisma.config';
 import { getErrorMessage } from '../helpers/errors.helper';
+import { TransactionService } from '../services/transaction.service';
+const transactionService = new TransactionService();
 
 export const placeBet = async (
   request: FastifyRequest<{
@@ -26,8 +28,7 @@ export const placeBet = async (
         where: { user_id: id },
         select: { balance: true },
       });
-
-      if (!userBalance) {
+      if (!userBalance?.balance) {
         throw new Error('Баланс пользователя не найден');
       }
 
@@ -49,18 +50,18 @@ export const placeBet = async (
         },
       });
 
-      // добавление транзакции
-      await prisma.transaction.create({
-        data: {
-          user_id: id,
-          bet_id: newBet.id,
-          type: 'bet_place',
+      await transactionService.createInTransaction(
+        {
+          userId: id,
+          betId: newBet.id,
+          type: 'bet_placement',
           amount: -bet,
-          balance_before: userBalance.balance,
-          balance_after: userBalance.balance - bet,
+          balanceBefore: userBalance.balance,
+          balanceAfter: userBalance.balance - bet,
           description: `Bet placement #${newBet.id}`,
         },
-      });
+        prisma,
+      );
 
       // Обновляем баланс пользователя
       await prisma.user_Balances.update({
@@ -77,7 +78,7 @@ export const placeBet = async (
   }
 };
 
-export const getBets = async (request, reply: FastifyReply) => {
+export const getBets = async (request: FastifyRequest, reply: FastifyReply) => {
   try {
     const getBets = await prisma.bet.findMany();
     reply.send(getBets);
@@ -152,6 +153,7 @@ export const getRecommendedBet = async (
     reply.send(400).send({ error: getErrorMessage(error) });
   }
 };
+
 export const getBetResult = async (
   request: FastifyRequest<{
     Body: IBetResultDto;
@@ -206,19 +208,20 @@ export const getBetResult = async (
           where: { user_id: id },
           data: { balance: { increment: winAmount } },
         });
-
         // добавление транзакции
-        await tx.transaction.create({
-          data: {
-            user_id: id,
-            bet_id: bet_id,
+
+        await transactionService.createInTransaction(
+          {
+            userId: id,
+            betId: bet_id,
             type: 'bet_win',
             amount: winAmount,
-            balance_before: userBalance.balance,
-            balance_after: userBalance.balance + winAmount,
+            balanceBefore: userBalance.balance,
+            balanceAfter: userBalance.balance + winAmount,
             description: `Win amount for bet #${bet.id}`,
           },
-        });
+          tx,
+        );
       }
 
       return reply.send({
@@ -227,7 +230,7 @@ export const getBetResult = async (
       });
     });
   } catch (error) {
-    console.error(error);
+    console.error(error, '<---err');
     const message = error instanceof Error ? error.message : 'Ошибка сервера';
     return reply.status(400).send({ error: message });
   }

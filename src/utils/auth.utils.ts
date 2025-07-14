@@ -10,7 +10,7 @@ export const authUtils = {
     try {
       return JWT.verify(token, String(process.env.APP_JWT_SECRET));
     } catch (err) {
-      console.error(err);
+      console.error(err, '<-- verify');
       return null;
     }
   },

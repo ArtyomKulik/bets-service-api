@@ -57,7 +57,7 @@ export const login = async (
       expiresIn: process.env.ACCESS_TOKEN_TTL,
     });
   } catch (err) {
-    console.log(err);
+    console.log(err, '<--- err');
     return handleServerError(reply, err);
   }
 };

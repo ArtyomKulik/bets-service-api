@@ -20,7 +20,7 @@ export default function loadEnvConfig(): void {
   const { error } = schema.validate(process.env, { abortEarly: false });
 
   if (error) {
-    console.error(error);
+    console.error(error, '<-- env err');
     throw new Error(`Config validation error: ${error.message}`);
   }
 }

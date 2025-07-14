@@ -61,7 +61,7 @@ export const setInitialBalance = async (
       balance: user.user_balances?.balance || 0,
     });
   } catch (err) {
-    console.log(err);
+    console.log(err, '<---- balance err');
     return handleServerError(reply, err);
   }
 };

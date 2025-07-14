@@ -1,58 +1,42 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import prisma from '../config/prisma.config';
 import { getErrorMessage } from '../helpers/errors.helper';
+import { ITransactionService } from '../services/transaction.service';
 
-export const getTransactions = async (
-  request: FastifyRequest<{ Querystring: { page?: string; limit?: string } }>,
-  reply: FastifyReply,
-) => {
-  const { id } = request['authUser'] || {};
-  if (!id) {
-    reply.status(401).send({ error: 'Ошибка авторизации' });
-  }
-  try {
-    const query = request.query;
-
-    const page = Math.max(1, parseInt(query.page || '1', 10) || 1);
-    const limit = parseInt(query.limit || '10', 10) || 10;
-
-    // Проверка на целые числа
-    if (!Number.isInteger(page) || !Number.isInteger(limit)) {
-      return reply.status(400).send({ error: 'Pagination parameters must be integers' });
+export const getTransactions =
+  (transactionService: ITransactionService) =>
+  async (
+    request: FastifyRequest<{ Querystring: { page?: string; limit?: string } }>,
+    reply: FastifyReply,
+  ) => {
+    const { id } = request['authUser'] || {};
+    if (!id) {
+      return reply.status(401).send({ error: 'Ошибка авторизации' });
     }
+    try {
+      const query = request.query;
+      const page = Math.max(1, parseInt(query.page || '1', 10) || 1);
+      const limit = parseInt(query.limit || '10', 10) || 10;
 
-    // Проверка на положительные значения
-    if (page < 1 || limit < 1) {
-      return reply.status(400).send({ error: 'Pagination parameters must be positive' });
+      if (!Number.isInteger(page) || !Number.isInteger(limit)) {
+        return reply.status(400).send({ error: 'Pagination parameters must be integers' });
+      }
+      if (page < 1 || limit < 1) {
+        return reply.status(400).send({ error: 'Pagination parameters must be positive' });
+      }
+
+      const result = await transactionService.get({ userId: id, page, limit });
+
+      reply.send({
+        transactions: result.transactions,
+        pagination: {
+          total: result.total,
+          page: result.page,
+          limit: result.limit,
+          pages: result.pages,
+        },
+      });
+    } catch (error) {
+      reply.status(400).send({ error: getErrorMessage(error) });
     }
-
-    const skip = (page - 1) * limit;
-    // Получаем транзакции с пагинацией
-    const transactions = await prisma.transaction.findMany({
-      where: { user_id: id },
-      skip,
-      take: limit,
-      orderBy: { created_at: 'desc' },
-    });
-
-    // Получаем общее количество транзакций
-    const total = await prisma.transaction.count();
-
-    // Рассчитываем общее количество страниц
-    const totalPages = Math.ceil(total / limit);
-
-    reply.send({
-      transactions: transactions.map((t) => ({
-        ...t,
-      })),
-      pagination: {
-        total,
-        page,
-        limit,
-        pages: totalPages,
-      },
-    });
-  } catch (error) {
-    reply.status(400).send({ error: getErrorMessage(error) });
-  }
-};
+  };

@@ -80,7 +80,7 @@ model Transaction {
   bet  Bet  @relation(fields: [bet_id], references: [id])
   user User @relation(fields: [user_id], references: [id])
 
-    @@index([user_id])        
+  @@index([user_id])        
   @@index([bet_id])     
 
   @@map("transaction")

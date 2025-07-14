@@ -1,8 +1,13 @@
 import { FastifyInstance } from 'fastify';
 import * as controllers from '../controllers';
+import { TransactionService } from '../services/transaction.service';
+
+const transactionService = new TransactionService();
 
 async function transactionRouter(fastify: FastifyInstance) {
-  fastify.get(
+  const handler = controllers.getTransactions(transactionService);
+
+  fastify.get<{ Querystring: { page?: string; limit?: string } }>(
     '/',
     {
       schema: {
@@ -17,7 +22,7 @@ async function transactionRouter(fastify: FastifyInstance) {
       },
     },
 
-    controllers.getTransactions,
+    handler,
   );
 }
 
