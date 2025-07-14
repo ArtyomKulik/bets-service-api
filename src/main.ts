@@ -1,42 +1,48 @@
-import Fastify, { FastifyRequest } from 'fastify';
+import Fastify, { FastifyInstance, FastifyRequest } from 'fastify';
 import loadEnvConfig from './config/env.config';
 import authRouter from './routes/auth.router';
 import balanceRouter from './routes/balance.router';
 import betRouter from './routes/bet.router';
 import healthRouter from './routes/health.router';
-import { fastifyPlugins } from './config/fastifyPlugins';
 import { checkValidHmacAndUserIdHeader, checkValidUser } from './helpers/headers.validation.helper';
 import { AuthHeaders } from './types/headers.types';
-// loadEnvConfig();
+import transactionRouter from './routes/transaction.router';
+
+loadEnvConfig();
 
 const buildServer = async () => {
   const fastify = Fastify({
     logger: true,
+    ignoreDuplicateSlashes: true,
   });
-
-  await fastifyPlugins(fastify);
 
   fastify.decorateRequest('authUser', null);
 
   // Register middlewares
   // server.register(formbody);
   // server.register(cors);
+
   // server.register(helmet);
-  fastify.register(authRouter, { prefix: '/auth' });
-  fastify.register(balanceRouter, { prefix: '/balance' });
-  fastify.register(betRouter, { prefix: '/bet' });
-  fastify.register(healthRouter, { prefix: '/health' });
+
+  const mainRouter = async (fastify: FastifyInstance) => {
+    fastify.register(authRouter, { prefix: '/auth' });
+    fastify.register(balanceRouter, { prefix: '/balance' });
+    fastify.register(betRouter, { prefix: '/bet' });
+    fastify.register(healthRouter, { prefix: '/health' });
+    fastify.register(transactionRouter, { prefix: '/transaction' });
+  };
+  fastify.register(mainRouter, { prefix: '/api' });
 
   // Регистрируем хук для всех запросов
   fastify.addHook(
     'preHandler',
     async (request: FastifyRequest<{ Headers: AuthHeaders }>, reply) => {
-      // Пропускаем проверку для /health
-      if (request.url === '/health' || request.url.startsWith('/docs')) {
+      // Пропускаем проверку для /health & /docs
+      if (request.url === '/api/health' || request.url.startsWith('/api/docs')) {
         return;
       }
 
-      if (request.url.includes('/auth')) {
+      if (request.url.startsWith('/api/auth')) {
         return await checkValidHmacAndUserIdHeader(request, reply);
       }
       await checkValidHmacAndUserIdHeader(request, reply);

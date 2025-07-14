@@ -26,7 +26,9 @@ export const login = async (
   ) {
     return reply.status(401).send({ error: 'Missing user-id or signature header' });
   }
-  if (!hmacUtils.verifySignature(clientSignature, request.body, process.env.HMAC_SECRET_KEY)) {
+  if (
+    !hmacUtils.verifySignature(clientSignature, request.body, String(process.env.HMAC_SECRET_KEY))
+  ) {
     return reply.status(400).send({ error: 'Incorrect signature' });
   }
   try {
@@ -43,7 +45,7 @@ export const login = async (
         sub: user.id,
         iat: Math.floor(Date.now() / 1000),
       },
-      process.env.APP_JWT_SECRET,
+      String(process.env.APP_JWT_SECRET),
       {
         algorithm: 'HS256',
         expiresIn: '1h',

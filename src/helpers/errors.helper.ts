@@ -22,7 +22,7 @@ export const ERRORS = {
 };
 
 export function handleServerError(reply: FastifyReply, error: any) {
-    console.log(error, '<----error')
+  console.log(error, '<----error');
   if (error instanceof AppError) {
     return reply.status(error.statusCode).send({ message: error.message });
   }
@@ -30,4 +30,9 @@ export function handleServerError(reply: FastifyReply, error: any) {
   return reply
     .status(ERRORS.internalServerError.statusCode)
     .send(ERRORS.internalServerError.message);
+}
+
+export function getErrorMessage(error: unknown = 'Unknown error') {
+  if (error instanceof Error) return error.message;
+  return String(error);
 }

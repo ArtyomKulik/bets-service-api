@@ -1,11 +1,12 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import prisma from '../config/prisma.config';
+import { getErrorMessage } from '../helpers/errors.helper';
 
 export const getTransactions = async (
   request: FastifyRequest<{ Querystring: { page?: string; limit?: string } }>,
   reply: FastifyReply,
 ) => {
-  const { id } = request['authUser'];
+  const { id } = request['authUser'] || {};
   if (!id) {
     reply.status(401).send({ error: 'Ошибка авторизации' });
   }
@@ -52,6 +53,6 @@ export const getTransactions = async (
       },
     });
   } catch (error) {
-    reply.status(400).send({ error: error.message });
+    reply.status(400).send({ error: getErrorMessage(error) });
   }
 };

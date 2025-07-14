@@ -1,4 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
+import { getErrorMessage } from '../helpers/errors.helper';
 
 export const checkHealth = async (request: FastifyRequest, reply: FastifyReply) => {
   try {
@@ -6,6 +7,6 @@ export const checkHealth = async (request: FastifyRequest, reply: FastifyReply) 
     const getExternalApiHealthData = await getExternalApiHealth.json();
     reply.send(getExternalApiHealthData);
   } catch (error) {
-    reply.status(400).send({ error: error.message });
+    reply.status(400).send({ error: getErrorMessage(error) });
   }
 };

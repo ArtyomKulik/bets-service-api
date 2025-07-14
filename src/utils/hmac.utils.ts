@@ -1,9 +1,9 @@
 import crypto from 'crypto';
+import { FastifyRequest } from 'fastify';
 
 export const hmacUtils = {
-  createHmacSignature: (body: Record<string, any> | null, secretKey: string): string => {
+  createHmacSignature: (body: unknown, secretKey: string): string => {
     const payload = JSON.stringify(body || {});
-
     // Создаем HMAC с использованием алгоритма SHA-512 и секретного ключа
     const hmac = crypto.createHmac('sha512', secretKey);
 

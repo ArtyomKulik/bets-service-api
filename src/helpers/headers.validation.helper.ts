@@ -56,8 +56,9 @@ export const checkValidHmacAndUserIdHeader = async (
       where: { user_id: userIdInt },
     });
     if (!apiAccount) {
-      reply.status(404).send({ error: 'Пользователь не найден' });
+      return reply.status(404).send({ error: 'Пользователь не найден' });
     }
+
     //создание hmac подписи
     const generatedSignature = hmacUtils.createHmacSignature(
       request.body,

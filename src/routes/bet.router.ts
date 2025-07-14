@@ -1,10 +1,10 @@
 import { FastifyInstance } from 'fastify';
 import * as controllers from '../controllers';
-import { betResultSchema, placeBetSchema } from '../schemas/Bet';
+import { betResultSchema, IBetResultDto, IPlaceBetDto, placeBetSchema } from '../schemas/Bet';
 import { validationUtils } from '../utils/validation.utils';
 
 async function betRouter(fastify: FastifyInstance) {
-  fastify.post(
+  fastify.post<{ Body: IPlaceBetDto }>(
     '/',
     {
       schema: {
@@ -47,7 +47,7 @@ async function betRouter(fastify: FastifyInstance) {
     controllers.getRecommendedBet,
   );
 
-  fastify.post(
+  fastify.post<{ Body: IBetResultDto }>(
     '/win',
     {
       schema: {

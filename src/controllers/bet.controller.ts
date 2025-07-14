@@ -2,6 +2,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { IBetResultDto, IPlaceBetDto } from '../schemas/Bet';
 import { error } from 'console';
 import prisma from '../config/prisma.config';
+import { getErrorMessage } from '../helpers/errors.helper';
 
 export const placeBet = async (
   request: FastifyRequest<{
@@ -9,9 +10,9 @@ export const placeBet = async (
   }>,
   reply: FastifyReply,
 ) => {
-  const { id } = request['authUser'];
+  const { id } = request['authUser'] || {};
   if (!id) {
-    reply.status(401).send({ error: 'Ошибка авторизации' });
+    return reply.status(401).send({ error: 'Ошибка авторизации' });
   }
   const { bet } = request.body || {};
   if (!bet) throw new Error('Неверная сумма ставки');
@@ -72,7 +73,7 @@ export const placeBet = async (
 
     reply.send(placeBetResult);
   } catch (error) {
-    reply.status(400).send({ error: error.message });
+    reply.status(400).send({ error: getErrorMessage(error) });
   }
 };
 
@@ -81,7 +82,7 @@ export const getBets = async (request, reply: FastifyReply) => {
     const getBets = await prisma.bet.findMany();
     reply.send(getBets);
   } catch (error) {
-    reply.status(400).send({ error: error.message });
+    reply.status(400).send({ error: getErrorMessage(error) });
   }
 };
 
@@ -91,11 +92,15 @@ export const getBetById = async (
   }>,
   reply: FastifyReply,
 ) => {
-  const { id } = request['authUser'];
+  const { id } = request['authUser'] || {};
   if (!id) {
-    reply.status(401).send({ error: 'Ошибка авторизации' });
+    return reply.status(401).send({ error: 'Ошибка авторизации' });
   }
-  const betId = parseInt(request.params.id, 10);
+  const betParamsId = request.params?.id;
+  if (!betParamsId) {
+    return reply.status(404).send({ error: 'Ставка не найдена' });
+  }
+  const betId = parseInt(betParamsId, 10);
 
   // Проверка валидности betId
   if (isNaN(betId) || betId <= 0 || isNaN(Number(id)) || id <= 0) {
@@ -109,7 +114,7 @@ export const getBetById = async (
 
     reply.send(getBet);
   } catch (error) {
-    reply.send(400).send({ error: error.message });
+    reply.send(400).send({ error: getErrorMessage(error) });
   }
 };
 
@@ -144,7 +149,7 @@ export const getRecommendedBet = async (
     const randomNumber = Math.floor(Math.random() * maxPossible) + 1;
     reply.send({ recommended_amount: randomNumber });
   } catch (error) {
-    reply.send(400).send({ error: error.message });
+    reply.send(400).send({ error: getErrorMessage(error) });
   }
 };
 export const getBetResult = async (
@@ -155,11 +160,11 @@ export const getBetResult = async (
 ) => {
   const { id } = request['authUser'] || {};
   if (!id) {
-    reply.status(401).send({ error: 'Пользователь не аутентифицирован' });
+    return reply.status(401).send({ error: 'Пользователь не аутентифицирован' });
   }
   const { bet_id } = request.body;
   try {
-    const result = await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx) => {
       // 1. Получаем ставку с блокировкой
       const bet = await tx.bet.findFirst({
         where: { id: bet_id },
@@ -178,6 +183,9 @@ export const getBetResult = async (
         throw new Error('Ставка не найдена или уже обработана');
       }
       const userBalance = await tx.user_Balances.findUnique({ where: { user_id: id } });
+      if (!userBalance) {
+        return reply.status(400).send({ message: 'Баланс не найден' });
+      }
       //  Генерируем результат (50% вероятность)
       const isWin = Math.random() > 0.5;
       const winAmount = isWin ? bet.amount * 2 : 0;
